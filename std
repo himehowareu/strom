@@ -1,0 +1,80 @@
+block_macro com block
+{}
+
+block_macro macro_if con1 con2 block
+{
+    runtime
+    {
+        """ block """ if "con1" == "con2" else ""
+    }
+
+}
+
+
+macro const type name value
+{
+    macro_if type int
+    {
+        #const name = value
+    }
+    macro_if type string
+    {
+        name:
+        #d "value"
+    }
+}
+
+macro var type name value
+{
+    name:
+    #d value
+}
+
+
+block_macro label name block
+{
+    runtime
+    {
+        """block""".replace("name",uuid1().hex+"_name")
+    }
+}
+
+macro jumpIf type where
+{
+    macro_if type >
+    {
+        jump_if_gt where
+    }
+    macro_if type <
+    {
+        jump_if_lt where
+    }
+    macro_if type =
+    {
+        jump_if_eq where
+    }
+}
+
+block_macro if arg1 con arg2 block
+{
+
+    label skip
+    {
+        label run
+        {
+            load arg1 into a
+            load arg2 into b
+            cmp
+            jumpIf con run
+            goto skip
+            run:
+            block
+            skip:
+        }
+    }
+}
+
+if 1 = 1
+{
+    it woorks 
+}

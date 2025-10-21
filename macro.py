@@ -5,11 +5,9 @@ from sys import argv
 def list_to_gen(input_list):
     for item in input_list:
         yield item
-
-
-
+        
+        
 macros = {}
-
 
 def getBlock(tokens):
     out = ""
@@ -19,7 +17,7 @@ def getBlock(tokens):
             break 
         else:
             out+="\n"
-    return out
+    return out.strip("{}")
 
 class macro:
     def __init__(self,args,content,block=False):
@@ -34,72 +32,41 @@ class macro:
         temp = self.content
         if self.block:
             passedArgs.append(getBlock(lines).strip("{}"))
-            # print("-------")
-            # print(passedArgs[-1])
-            # print("-------")
-            # print("+++++++")
-            # print(self.content)
-            # print("+++++++")
-            # print("=======")
-            # print(passedArgs)
-            # print("=======")
         if len(self.args) == len(passedArgs):
             for n , arg in enumerate(passedArgs):
                 temp = temp.replace(self.args[n],arg)
             return parse(text = temp)
 
 
-
-
-def j(text):
-    return " ".join(text)
-
-
-def parse(filename="-",files=[],text=""):
-    if filename in files:
-        return "error recursive import"
+def parse(filename="-",text=""):
     scriptFile=text
     if filename != "-":
         with open(filename) as file:
             scriptFile=file.read()
     output=[]
     script = scriptFile.split("\n")
-    # script = [ j(split(x)) for x in script  ]
     script = ([x for x in script if x!= "" ])
     lines = list_to_gen(script)
     for line in lines:
         tokens = line.lstrip(" ").split(" ")
-        # tokens = split(line)
-        # print(">>> ",tokens)
         if tokens == [""]:
             continue
         elif tokens[0] == "import":
             file_name = tokens[1]
-            output.append(parse(file_name,files))
-            # print(f"importing {file_name}")
+            output.append(parse(file_name))
         elif tokens[0] == "macro":
-            # print(f"found macro {line}")
             args = split(line)[1:]
-            macros[tokens[1]]=macro(args,getBlock(lines).strip("{}"))
+            macros[tokens[1]]=macro(args,getBlock(lines))
         elif tokens[0] in macros.keys():
             mline = split(line)
-            # print(f"found {mline}")
-            # print(macros[tokens[0]].args)
             mac = macros[tokens[0]]
             output.append(mac.run(mline,lines))
         elif tokens[0] == "block_macro":
-            # print(f"found block macro {line}")
             args = split(line)[1:]
-            macros[tokens[1]]=macro(args,getBlock(lines).strip("{}"),block=True)
+            macros[tokens[1]]=macro(args,getBlock(lines),block=True)
         elif tokens[0] == "runtime":
-            # print("found runtime")
-            
-            b = getBlock(lines).strip("{}")
-            # print("========")
-            # print(b)
-            # print("========")
+            b = getBlock(lines)
             output.append(parse(text=eval(b)))
-            
         else:
             output.append(line)
 
@@ -111,5 +78,4 @@ if len(argv) >1:
     print(parse(argv[1]))
 else:
     print(parse("storm"))
-# print(parse("strings"))
-# parse("storm")
+

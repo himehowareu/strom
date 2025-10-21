@@ -1,6 +1,11 @@
 import filename 
 this command will import the file into the current file 
 
+com
+{
+  this is a comment
+}
+
 macro name arg1 arg2
 {
   commands arg2
